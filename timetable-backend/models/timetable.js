@@ -13,10 +13,7 @@ const slotSchema = new mongoose.Schema({
   courseCode: String,
   courseName: String,
 
-  professor: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  }
+  professor: String
 });
 
 const timetableSchema = new mongoose.Schema({

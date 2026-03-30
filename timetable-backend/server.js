@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
-const professorRoutes = require("./routes/professorRoutes");
+const hodRoutes = require("./routes/professorRoutes");
 const timetableRoutes = require("./routes/timetableRoutes");
 const roomRoutes = require("./routes/roomRoutes");
 
@@ -33,7 +33,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/professor", professorRoutes);
+app.use("/api/hod", hodRoutes);
 app.use("/api/timetable", timetableRoutes);
 app.use("/api/rooms", roomRoutes);
 

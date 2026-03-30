@@ -4,7 +4,7 @@ const handleGetTimetable = async (req, res) => {
   try {
     const timetable = await Timetable.findOne({
       room: req.params.roomId
-    }).populate("slots.professor", "name email");
+    });
 
     if (!timetable) {
       return res.status(404).json({ message: "Not found" });

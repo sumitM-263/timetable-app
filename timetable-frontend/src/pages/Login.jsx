@@ -5,7 +5,7 @@ function Login({ setToken }) {
   const [isRegister, setIsRegister] = useState(false);
 
   const [name, setName] = useState("");
-  const [role, setRole] = useState("professor");
+  const [role, setRole] = useState("hod");
   const [department, setDepartment] = useState("");
 
   const [email, setEmail] = useState("");
@@ -24,8 +24,8 @@ function Login({ setToken }) {
 
     if (isRegister) {
       if (!name) return "Name is required";
-      if (role === "professor" && !department) {
-        return "Department is required for professor";
+      if (role === "hod" && !department) {
+        return "Department is required for hod";
       }
     }
 
@@ -97,11 +97,11 @@ function Login({ setToken }) {
               style={styles.input}
               onChange={(e) => setRole(e.target.value)}
             >
-              <option value="professor">Professor</option>
+              <option value="hod">HOD</option>
               <option value="admin">Admin</option>
             </select>
 
-            {role === "professor" && (
+            {role === "hod" && (
               <input
                 style={styles.input}
                 placeholder="Department (CSE/ECE/ME)"

@@ -1,7 +1,6 @@
 const Timetable = require("../models/timetable");
-const User = require("../models/user");
 
-// PROFESSOR UPDATE SLOT
+// HOD UPDATE SLOT
 const handleUpdateSlot = async (req, res) => {
     try {
         const { timetableId, day, time, courseCode, courseName, professorName } = req.body;
@@ -39,27 +38,21 @@ const handleUpdateSlot = async (req, res) => {
             });
         }
 
-        // Find professor by name and department
-        const profUser = await User.findOne({ name: professorName, role: "hod", department: slot.department });
-        if (!profUser) {
-            return res.status(400).json({ message: "HOD not found in this department" });
-        }
-
-        // 🔥 FIX: conflict detection for selected professor (ignore same slot edit)
+        // 🔥 FIX: conflict detection for entered professor name (ignore same slot edit)
         const conflict = await Timetable.findOne({
             _id: { $ne: timetableId }, // ignore current timetable
             slots: {
                 $elemMatch: {
                     day: day,
                     time: time,
-                    professor: profUser._id
+                    professor: professorName
                 }
             }
         });
 
         if (conflict) {
             return res.status(400).json({
-                message: "Selected HOD is already assigned in another room at this time"
+                message: "This professor is already assigned in another room at this time"
             });
         }
 
@@ -69,7 +62,7 @@ const handleUpdateSlot = async (req, res) => {
         // ✅ Update / overwrite slot (edit allowed)
         slot.courseCode = courseCode;
         slot.courseName = courseName;
-        slot.professor = profUser._id;
+        slot.professor = professorName;
 
         await timetable.save();
 

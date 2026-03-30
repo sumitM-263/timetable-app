@@ -10,7 +10,8 @@ function Timetable({ roomId }) {
   const [formData, setFormData] = useState({
     department: "",
     courseCode: "",
-    courseName: ""
+    courseName: "",
+    professorName: ""
   });
 
   // 🔥 NEW: message modal state
@@ -56,7 +57,8 @@ function Timetable({ roomId }) {
     setFormData({
       department: slot.department || "",
       courseCode: slot.courseCode || "",
-      courseName: slot.courseName || ""
+      courseName: slot.courseName || "",
+      professorName: slot.professor || ""
     });
   };
 
@@ -78,22 +80,37 @@ function Timetable({ roomId }) {
         });
       }
 
-      if (role === "professor") {
-        await API.put("/professor/update-slot", {
+      if (role === "hod") {
+        if (!formData.courseCode.trim()) {
+          setMessage("Please enter a course code");
+          setMessageType("error");
+          return;
+        }
+        if (!formData.courseName.trim()) {
+          setMessage("Please enter a course name");
+          setMessageType("error");
+          return;
+        }
+        if (!formData.professorName.trim()) {
+          setMessage("Please enter a professor name");
+          setMessageType("error");
+          return;
+        }
+
+        await API.put("/hod/update-slot", {
           timetableId,
           day: selectedSlot.day,
           time: selectedSlot.time,
           courseCode: formData.courseCode,
-          courseName: formData.courseName
+          courseName: formData.courseName,
+          professorName: formData.professorName
         });
 
         updateLocalSlot({
           ...selectedSlot,
           courseCode: formData.courseCode,
           courseName: formData.courseName,
-          professor: {
-            name: localStorage.getItem("name") || "You"
-          }
+          professor: formData.professorName
         });
       }
 
@@ -134,7 +151,7 @@ function Timetable({ roomId }) {
                   <td
                     key={day}
                     className={
-                      role === "professor" &&
+                      role === "hod" &&
                         (!slot?.department || slot.department !== userDepartment)
                         ? "cell disabled"
                         : "cell"
@@ -146,7 +163,7 @@ function Timetable({ roomId }) {
                         openModal(slot);
                       }
 
-                      if (role === "professor") {
+                      if (role === "hod") {
                         if (
                           slot.department &&
                           slot.department === userDepartment
@@ -160,7 +177,7 @@ function Timetable({ roomId }) {
                     <br />
                     {slot?.courseCode || ""} {slot?.courseName || ""}
                     <div style={{ fontSize: "13px", color: "#666666" }}>
-                      {slot?.professor?.name || ""}
+                      {slot?.professor || ""}
                     </div>
                   </td>
                 );
@@ -189,7 +206,7 @@ function Timetable({ roomId }) {
               />
             )}
 
-            {role === "professor" && (
+            {role === "hod" && (
               <>
                 <input
                   placeholder="Course Code"
@@ -203,6 +220,13 @@ function Timetable({ roomId }) {
                   value={formData.courseName}
                   onChange={(e) =>
                     setFormData({ ...formData, courseName: e.target.value })
+                  }
+                />
+                <input
+                  placeholder="Professor Name"
+                  value={formData.professorName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, professorName: e.target.value })
                   }
                 />
               </>
