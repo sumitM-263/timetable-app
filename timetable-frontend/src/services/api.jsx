@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://timetable-app-h2pg.onrender.com/api"
+  baseURL: "https://timetable-app-h2pg.onrender.com/"
 });
 
 // attach token automatically
