@@ -1,5 +1,5 @@
-const Room = require("../models/Room");
-const Timetable = require("../models/Timetable");
+const Room = require("../models/room");
+const Timetable = require("../models/timetable");
 
 // CREATE ROOM
 const handleCreateRoom = async (req, res) => {

@@ -1,4 +1,4 @@
-const Timetable = require("../models/Timetable");
+const Timetable = require("../models/timetable");
 
 // PROFESSOR UPDATE SLOT
 const handleUpdateSlot = async (req, res) => {
