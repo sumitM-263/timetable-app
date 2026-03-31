@@ -77,11 +77,6 @@ const handleAssignDepartment = async (req, res) => {
     try {
         const { timetableId, day, time, department } = req.body;
 
-        const validDepartments = ["CSE", "ECE", "ME"];
-        if (!validDepartments.includes(department)) {
-            return res.status(400).json({ message: "Invalid department" });
-        }
-
         const timetable = await Timetable.findById(timetableId);
         if (!timetable) {
             return res.status(404).json({ message: "Timetable not found" });
@@ -168,10 +163,55 @@ const handleEditRoom = async (req, res) => {
     }
 };
 
+// CLEAR SLOT (Admin can clear any slot completely)
+const handleClearSlot = async (req, res) => {
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Access denied" });
+    }
+
+    try {
+        const { timetableId, day, time, clearDepartment = false } = req.body;
+
+        const timetable = await Timetable.findById(timetableId);
+        if (!timetable) {
+            return res.status(404).json({ message: "Timetable not found" });
+        }
+
+        const slot = timetable.slots.find(
+            s => s.day === day && s.time === time
+        );
+
+        if (!slot) {
+            return res.status(404).json({ message: "Slot not found" });
+        }
+
+        // Clear course details
+        slot.courseCode = null;
+        slot.courseName = null;
+        slot.professor = null;
+
+        // Optionally clear department if requested
+        if (clearDepartment) {
+            slot.department = null;
+        }
+
+        await timetable.save();
+
+        res.json({
+            message: "Slot cleared successfully",
+            slot
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     handleCreateRoom,
     handleCreateTimetable,
     handleAssignDepartment,
     handleDeleteRoom,
-    handleEditRoom
+    handleEditRoom,
+    handleClearSlot
 };

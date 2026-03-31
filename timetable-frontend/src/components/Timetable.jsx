@@ -19,6 +19,7 @@ function Timetable({ roomId }) {
   const [messageType, setMessageType] = useState("");
 
   const [saving, setSaving] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   const role = localStorage.getItem("role");
   const userDepartment = localStorage.getItem("department");
@@ -63,10 +64,41 @@ function Timetable({ roomId }) {
   };
 
   const handleSave = async () => {
+    // Check if any changes were made (only for slots that already have data)
+    const hasChanges = () => {
+      if (role === "admin") {
+        // Only check for changes if slot already has a department assigned
+        if (selectedSlot.department) {
+          return formData.department.trim() !== (selectedSlot.department || "");
+        }
+        return true; // New department assignment is always a change
+      } else if (role === "hod") {
+        // Only check for changes if slot already has course data
+        if (selectedSlot.courseCode || selectedSlot.courseName || selectedSlot.professor) {
+          return formData.courseCode.trim() !== (selectedSlot.courseCode || "") ||
+                 formData.courseName.trim() !== (selectedSlot.courseName || "") ||
+                 formData.professorName.trim() !== (selectedSlot.professor || "");
+        }
+        return true; // New course assignment is always a change
+      }
+      return false;
+    };
+
+    if (!hasChanges()) {
+      setSelectedSlot(null); // Just close the modal
+      return;
+    }
+
     try {
       setSaving(true);
 
       if (role === "admin") {
+        if (!formData.department.trim()) {
+          setMessage("Please enter a department name");
+          setMessageType("error");
+          return;
+        }
+
         await API.put("/admin/assign-department", {
           timetableId,
           day: selectedSlot.day,
@@ -125,6 +157,79 @@ function Timetable({ roomId }) {
       setMessageType("error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleClear = async () => {
+    // Check if slot is already empty
+    const isSlotEmpty = () => {
+      if (role === "admin") {
+        // Admin considers slot empty if nothing is assigned
+        return !selectedSlot.department && 
+               !selectedSlot.courseCode && 
+               !selectedSlot.courseName && 
+               !selectedSlot.professor;
+      } else if (role === "hod") {
+        // HOD considers slot empty if no course details (department stays)
+        return !selectedSlot.courseCode && 
+               !selectedSlot.courseName && 
+               !selectedSlot.professor;
+      }
+      return false;
+    };
+
+    if (isSlotEmpty()) {
+      setMessage("Slot is already empty");
+      setMessageType("error");
+      return;
+    }
+
+    try {
+      setClearing(true);
+
+      if (role === "admin") {
+        await API.put("/admin/clear-slot", {
+          timetableId,
+          day: selectedSlot.day,
+          time: selectedSlot.time,
+          clearDepartment: true // Admin clears everything including department
+        });
+
+        updateLocalSlot({
+          ...selectedSlot,
+          department: null,
+          courseCode: null,
+          courseName: null,
+          professor: null
+        });
+      }
+
+      if (role === "hod") {
+        await API.put("/hod/clear-slot", {
+          timetableId,
+          day: selectedSlot.day,
+          time: selectedSlot.time
+        });
+
+        updateLocalSlot({
+          ...selectedSlot,
+          courseCode: null,
+          courseName: null,
+          professor: null
+        });
+      }
+
+      setSelectedSlot(null);
+
+      // 🔥 SUCCESS MESSAGE
+      setMessage("Slot cleared successfully");
+      setMessageType("success");
+
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Error clearing slot");
+      setMessageType("error");
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -232,8 +337,15 @@ function Timetable({ roomId }) {
               </>
             )}
 
-            <button onClick={handleSave} disabled={saving}>
+            <button onClick={handleSave} disabled={saving || clearing}>
               {saving ? "Saving..." : "Save"}
+            </button>
+            <button 
+              onClick={handleClear} 
+              disabled={saving || clearing}
+              style={{ backgroundColor: "#ff6b6b", color: "white" }}
+            >
+              {clearing ? "Clearing..." : "Clear Slot"}
             </button>
             <button onClick={() => setSelectedSlot(null)}>Cancel</button>
           </div>

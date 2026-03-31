@@ -104,7 +104,7 @@ function Login({ setToken }) {
             {role === "hod" && (
               <input
                 style={styles.input}
-                placeholder="Department (CSE/ECE/ME)"
+                placeholder="Department"
                 onChange={(e) => setDepartment(e.target.value)}
               />
             )}

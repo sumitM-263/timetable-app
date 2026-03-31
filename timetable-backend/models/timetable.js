@@ -4,11 +4,7 @@ const slotSchema = new mongoose.Schema({
   day: String,
   time: String,
 
-  department: {
-    type: String,
-    enum: ["CSE", "ECE", "ME", null],
-    default: null
-  },
+  department: String,
 
   courseCode: String,
   courseName: String,
