@@ -137,7 +137,7 @@ function Login({ setToken }) {
             setSuccess("");
           }}
         >
-          Switch to {isRegister ? "Login" : "Register"}
+          {isRegister ? "Login" : "Register"}
         </p>
       </div>
     </div>
